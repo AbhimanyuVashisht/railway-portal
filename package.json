@@ -1,0 +1,42 @@
+{
+  "name": "railway-portal",
+  "version": "1.0.0",
+  "description": "### What is this repository for? This repository contains the UI for Railway-portal.",
+  "main": "server.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AbhimanyuVashisht/railway-portal.git"
+  },
+  "author": "Abhimanyu Vashisht",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AbhimanyuVashisht/railway-portal/issues"
+  },
+  "homepage": "https://github.com/AbhimanyuVashisht/railway-portal#readme",
+  "dependencies": {
+    "@material-ui/icons": "^1.0.0-beta.43",
+    "axios": "^0.18.0",
+    "chartist": "^0.11.0",
+    "classnames": "^2.2.5",
+    "firebase": "^4.13.1",
+    "material-ui": "1.0.0-beta.41",
+    "npm-run-all": "^4.1.2",
+    "perfect-scrollbar": "^1.3.0",
+    "react": "^16.3.2",
+    "react-chartist": "^0.13.1",
+    "react-dom": "^16.3.2",
+    "react-event-timeline": "^1.5.1",
+    "react-google-maps": "^9.4.5",
+    "react-router-dom": "^4.2.2",
+    "react-scripts": "^1.1.4",
+    "react-swipeable-views": "^0.12.13",
+    "semantic-ui-css": "^2.3.1",
+    "semantic-ui-react": "^0.80.0"
+  }
+}

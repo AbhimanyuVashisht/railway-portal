@@ -1,0 +1,10 @@
+# IDEA
+.idea/
+
+# Installed Dependencies
+node_modules
+
+package-lock.json
+
+# ENV variable
+.env
