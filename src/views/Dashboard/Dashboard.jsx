@@ -156,6 +156,18 @@ class Dashboard extends React.Component {
                                 <Table.Row>
                                     <Table.Cell>
                                         <Header.Content>
+                                            Train ID
+                                        </Header.Content>
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        <Header.Content>
+                                            {this.state.show ? this.state.completeDetail.trainId : null}
+                                        </Header.Content>
+                                    </Table.Cell>
+                                </Table.Row>
+                                <Table.Row>
+                                    <Table.Cell>
+                                        <Header.Content>
                                             Time To Reach
                                         </Header.Content>
                                     </Table.Cell>
