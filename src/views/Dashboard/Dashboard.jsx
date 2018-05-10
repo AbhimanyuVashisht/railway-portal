@@ -1,12 +1,13 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { withStyles, Grid } from "material-ui";
+import { Header, Table, Button} from 'semantic-ui-react';
+
 import {Timeline, TimelineEvent } from 'react-event-timeline';
 import {
-    Button,
+    RegularCard,
     CustomInput,
     ProfileCard,
-    RegularCard,
     ItemGrid,
     Snackbar,
 } from "components";
@@ -23,17 +24,21 @@ class Dashboard extends React.Component {
   constructor(props){
       super(props);
       this.state = {
-          locationTimeLine: [],
           trainID: null,
+          locationTimeLine: [],
           dataFetchError: false,
           isLoading: false,
           notification: false,
           username: JSON.parse(sessionStorage.getItem('user'))? JSON.parse(sessionStorage.getItem('user')).name : 'USER',
+          station: JSON.parse(sessionStorage.getItem('user')) ? JSON.parse(sessionStorage.getItem('user')).station : null,
           notificationMessage: '',
+          trainTable: [78456, 45678, 39250],
+          completeDetail: {},
+          show: false,
       };
-
       this.handleInputChange = this.handleInputChange.bind(this);
       this.fetchInputDetails = this.fetchInputDetails.bind(this);
+      this.showMessage = this.showMessage.bind(this);
   }
 
   config = {
@@ -42,7 +47,6 @@ class Dashboard extends React.Component {
         databaseURL: `https://portal-3401.firebaseio.com`,
         projectId: "portal-3401",
         storageBucket: `portal-3401.appspot.com`,
-        // messagingSenderId: secret.MESSAGING_SENDER_ID
   };
 
 
@@ -55,9 +59,13 @@ class Dashboard extends React.Component {
           let notification  = snapShot.val();
           if(this.user.station !== 0){
               if(notification[this.user.station]){
+                  let table = this.state.trainTable;
+                  table.splice(0, 0, notification[this.user.station].trainId);
                   this.setState({
+                      trainTable: table,
                       notification: true,
-                      notificationMessage: notification[this.user.station].trainId
+                      notificationMessage: notification[this.user.station].trainName + '\n('+  notification[this.user.station].trainId + ')',
+                      completeDetail: notification[this.user.station]
                   })
               }
           }
@@ -68,21 +76,19 @@ class Dashboard extends React.Component {
       this.notificationRecieved.off()
   }
 
-  handleInputChange(newValue){
-    this.setState({
-        trainID: newValue
-    })
-  }
+    handleInputChange(newValue){
+        this.setState({
+            trainID: newValue
+        })
+    }
 
-  fetchInputDetails(){
-      this.setState({
-          isLoading: true
-      });
+  fetchInputDetails(trainId){
       if(this.auth){
           axiosConfig.headers['x-origin'] = this.user.role;
           axiosConfig.headers['x-auth'] = this.auth;
       }
-      axios.get(`/tracks/${parseInt(this.state.trainID)}`, axiosConfig)
+      console.log(trainId);
+      axios.get(`/tracks/${parseInt(trainId)}`, axiosConfig)
           .then((response) => {
               response = response.data;
               if(response.error){
@@ -94,20 +100,30 @@ class Dashboard extends React.Component {
                   let runningStatus = response.data.runningStatus;
                   let indexToPush;
                   for(let i in checkpoints) {
-                      if(checkpoints[i].stationId === runningStatus.stationId){
-                          indexToPush = i - 1;
+                      if(checkpoints[i].stationDetail.stationId === runningStatus.stationId){
+                          console.log('Hello');
+                          indexToPush = i;
                           break;
                       }
                   }
 
-                  checkpoints.splice(indexToPush, 0, runningStatus);
+                  console.log(indexToPush);
+                  if(indexToPush === 1){
+                      checkpoints.splice(2, 0, runningStatus);
+                  }else {
+                      checkpoints.splice(indexToPush, 0, runningStatus);
+                  }
                   this.setState({
                       locationTimeLine: checkpoints,
-                      isLoading: false
                   });
               }
-
           }).catch((err) => console.log(err));
+  }
+
+  showMessage(){
+    this.setState({
+        show: true,
+    })
   }
 
   render() {
@@ -115,40 +131,164 @@ class Dashboard extends React.Component {
       <div>
         <Grid container>
             <Snackbar
-                place="tr"
+                place="tc"
                 color="info"
                 icon={AddAlert}
-                message={this.state.notificationMessage}
+                message={<Button onClick={this.showMessage}>{this.state.notificationMessage}</Button>}
                 open={this.state.notification}
                 closeNotification={() => this.setState({ notification: false })}
+                close
             />
-            <ItemGrid xs={12} sm={12} md={8}>
-                <RegularCard
-                    cardTitle="Enter Train Number to Track"
-                    content={
-                        <div>
-                            <Grid container>
-                                <ItemGrid xs={12} sm={12} md={4}>
-                                    <CustomInput
-                                        labelText="Train ID"
-                                        id="train-id"
-                                        formControlProps={{
-                                            fullWidth: true
-                                        }}
-                                        onChange={this.handleInputChange}
-                                    />
-                                </ItemGrid>
-                            </Grid>
-                        </div>
-                    }
-                    footer={<Button color="primary" onClick={this.fetchInputDetails}>Submit</Button>}
-                />
+            <ItemGrid xs={12} sm={8} md={8}>
+                {
+                    this.state.show ? <Button basic icon="chevron left" onClick={() => this.setState({show: false})}/> : null
+                }
+                {
+                    this.state.show? (
+                        <Table basic='very' celled>
+                            <Table.Header>
+                                <Table.Row colspan={2}>
+                                    <Table.HeaderCell>Train Detail</Table.HeaderCell>
+                                    <Table.HeaderCell></Table.HeaderCell>
+                                </Table.Row>
+                            </Table.Header>
+                            <Table.Body>
+                                <Table.Row>
+                                    <Table.Cell>
+                                        <Header.Content>
+                                            Time To Reach
+                                        </Header.Content>
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        <Header.Content>
+                                            {this.state.show ? this.state.completeDetail.time : null}
+                                        </Header.Content>
+                                    </Table.Cell>
+                                </Table.Row>
+                                <Table.Row>
+                                    <Table.Cell>
+                                        <Header.Content>
+                                            Destination Station
+                                        </Header.Content>
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        <Header.Content>
+                                            {this.state.show ? this.state.completeDetail.destinationStation : null}
+                                        </Header.Content>
+                                    </Table.Cell>
+                                </Table.Row>
+                                <Table.Row>
+                                    <Table.Cell>
+                                        <Header.Content>
+                                            Origin Station
+                                        </Header.Content>
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        <Header.Content>
+                                            {this.state.show ? this.state.completeDetail.originStation : null}
+                                        </Header.Content>
+                                    </Table.Cell>
+                                </Table.Row>
+                                <Table.Row>
+                                    <Table.Cell>
+                                        <Header.Content>
+                                            Water Level
+                                        </Header.Content>
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        <Header.Content>
+                                            {this.state.show ? this.state.completeDetail.waterLevel : null}
+                                        </Header.Content>
+                                    </Table.Cell>
+                                </Table.Row>
+                                <Table.Row>
+                                    <Table.Cell>
+                                        <Header.Content>
+                                            Fuel Level
+                                        </Header.Content>
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        <Header.Content>
+                                            {this.state.show ? this.state.completeDetail.fuelLevel : null}
+                                        </Header.Content>
+                                    </Table.Cell>
+                                </Table.Row>
+                                <Table.Row>
+                                    <Table.Cell>
+                                        <Header.Content>
+                                            Special Message
+                                        </Header.Content>
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        <Header.Content>
+                                            {this.state.show ? this.state.completeDetail.specialMessage : null}
+                                        </Header.Content>
+                                    </Table.Cell>
+                                </Table.Row>
+                            </Table.Body>
+                        </Table>
+                    ) :  (
+                        <ProfileCard
+                            avatar={avatar}
+                            title={this.state.username}
+                        />
+                    )
+                }
             </ItemGrid>
-            <ItemGrid xs={12} sm={12} md={4}>
-                <ProfileCard
-                    avatar={avatar}
-                    title={this.state.username}
-                />
+            <ItemGrid xs={12} sm={4} md={4}>
+                {
+                    this.state.station !== 0 ? (
+                        <Table basic='very' celled collapsing>
+                            <Table.Header>
+                                <Table.Row>
+                                    <Table.HeaderCell>Train Id</Table.HeaderCell>
+                                    <Table.HeaderCell></Table.HeaderCell>
+                                </Table.Row>
+                            </Table.Header>
+                            <Table.Body>
+                                {
+                                    this.state.trainTable.map((value, index) => {
+                                        return (
+                                            <Table.Row key={index}>
+                                                <Table.Cell>
+                                                    <Header.Content>
+                                                        {value}
+                                                    </Header.Content>
+                                                </Table.Cell>
+                                                <Table.Cell>
+                                                    <Header.Content>
+                                                        <Button basic onClick={() => this.fetchInputDetails(value)}>View Status</Button>
+                                                    </Header.Content>
+                                                </Table.Cell>
+                                            </Table.Row>
+                                        )
+                                    })
+                                }
+                            </Table.Body>
+                        </Table>
+                    ) : (
+                        <RegularCard
+                            cardTitle="Enter Train Number to Track"
+                            content={
+                                <div>
+                                    <Grid container>
+                                        <ItemGrid xs={12} sm={12} md={4}>
+                                            <CustomInput
+                                                labelText="Train ID"
+                                                id="train-id"
+                                                formControlProps={{
+                                                    fullWidth: true
+                                                }}
+                                                onChange={this.handleInputChange}
+                                            />
+                                        </ItemGrid>
+                                    </Grid>
+                                </div>
+                            }
+                            footer={<Button color="purple" basic onClick={() => this.fetchInputDetails(this.state.trainID)}>Submit</Button>}
+                        />
+                    )
+                }
             </ItemGrid>
         </Grid>
           <Grid container>
@@ -162,7 +302,7 @@ class Dashboard extends React.Component {
                                                      icon={<i className="material-icons md-18">my_location</i>}
                                                      key={index}
                                       >
-                                          Time to reach next station {value.time}
+                                          Time to reach next station {value.time} hr
                                       </TimelineEvent>
                                   )
                               }else {
@@ -171,7 +311,7 @@ class Dashboard extends React.Component {
                                                      icon={<i className="material-icons md-18">location_on</i>}
                                                      key={index}
                                       >
-                                          Next Station will come after  l     {value.distanceFromNextStation} km
+                                          Next Station will come after  |     {value.distanceFromNextStation} km
                                       </TimelineEvent>
                                   )
 

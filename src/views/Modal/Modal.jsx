@@ -76,7 +76,7 @@ export default class LoginModal extends React.Component{
                             <input type="password" placeholder="Password" onChange={this.handleChange} required/>
                         </Form.Field>
                         <Form.Field>
-                            <Checkbox label='Admin Login' onChange={this.handleCheckboxChange} defaultChecked={this.state.checked}/>
+                            <Checkbox label='Station Master' onChange={this.handleCheckboxChange} defaultChecked={this.state.checked}/>
                         </Form.Field>
                         <Button type='submit' color="green" size='small'><h5>Log In</h5></Button>
                     </Form>

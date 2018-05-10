@@ -8,7 +8,7 @@ const dashboardRoutes = [
   {
     path: "/portal",
     sidebarName: "Portal",
-    navbarName: ".4Portal",
+    navbarName: "Portal",
     icon: Dashboard,
     component: DashboardPage
   },
