@@ -60,7 +60,17 @@ class Dashboard extends React.Component {
           if(this.user.station !== 0){
               if(notification[this.user.station]){
                   let table = this.state.trainTable;
-                  table.splice(0, 0, notification[this.user.station].trainId);
+                  let flag = 0;
+                  table.map(value => {
+                      if(value == this.state.trainTable){
+                          flag = 1;
+                      }
+                      console.log('Hello');
+                  });
+                  if(flag === 0){
+                      table.splice(0, 0, notification[this.user.station].trainId);
+                  }
+                  console.log('dgjvhgv');
                   this.setState({
                       trainTable: table,
                       notification: true,
